@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "408144020751",
+    "project_id": "quick-form-4fdd6",
+    "storage_bucket": "quick-form-4fdd6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408144020751:android:e210b48498fecdf35f2a7a",
+        "android_client_info": {
+          "package_name": "com.example.quickform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBENqvDPw4IiEPFAyzUU3PkBFPNkoJvKe0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408144020751:android:e629e7780a4254975f2a7a",
+        "android_client_info": {
+          "package_name": "com.example.quickformproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBENqvDPw4IiEPFAyzUU3PkBFPNkoJvKe0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408144020751:android:081509faf00ecee85f2a7a",
+        "android_client_info": {
+          "package_name": "com.quickform.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBENqvDPw4IiEPFAyzUU3PkBFPNkoJvKe0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
