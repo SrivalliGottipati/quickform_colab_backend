@@ -31,7 +31,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBENqvDPw4IiEPFAyzUU3PkBFPNkoJvKe0',
-    appId: '1:408144020751:android:e210b48498fecdf35f2a7a',
+    appId: '1:408144020751:android:081509faf00ecee85f2a7a',
     messagingSenderId: '408144020751',
     projectId: 'quick-form-4fdd6',
     storageBucket: 'quick-form-4fdd6.firebasestorage.app',

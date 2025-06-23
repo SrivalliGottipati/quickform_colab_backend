@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../main.dart';
 import 'LoginScreen.dart';
 
 class AdminSignUpScreen extends StatefulWidget {
@@ -22,6 +22,17 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
   final dropctrl = TextEditingController();
   final collegeCtrl = TextEditingController();
   final branchCtrl = TextEditingController();
+  bool isPasswordValid(String password) {
+    final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(password);
+  }
+  bool isEmailValid(String email) {
+    final pattern = r'^[\w-\.]+@gmail\.com$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(email);
+  }
+
 
   String? selectedItem;
   String? selectedCollege;
@@ -244,12 +255,25 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        if(passctrl.text.trim().isNotEmpty && emailctrl.text.trim().isNotEmpty && passctrl.text.trim().length>=6 && namectrl.text.trim().isNotEmpty && passctrl.text.trim()==conpassctrl.text.trim()){
-                          createAccount();
-                          //Navigator.push(context, MaterialPageRoute(builder: (context)=>));
+                        if (emailctrl.text.trim().isEmpty ||
+                            passctrl.text.trim().isEmpty ||
+                            namectrl.text.trim().isEmpty ||
+                            conpassctrl.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill all the fields")));
                         }
-                        else{
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill the form")));
+                        else if (!isPasswordValid(passctrl.text.trim())) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Password must be at least 8 characters,\ninclude a capital letter, number, and special character")));
+                        }
+                        else if (passctrl.text.trim() != conpassctrl.text.trim()) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Passwords do not match")));
+                        }
+                        else if (!isEmailValid(emailctrl.text.trim())) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Use gmail account")));
+                        }
+                        else {
+                          createAccount();
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -282,7 +306,7 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
         password: passctrl.text.trim()
     ).then((value)async{
       String uid = value.user!.uid;
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      await FirebaseFirestore.instance.collection('admins').doc(uid).set({
         'uid': uid,
         'name': namectrl.text.trim(),
         'employee id': empctrl.text.trim(),

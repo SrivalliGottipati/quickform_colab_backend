@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../main.dart';
 import 'LoginScreen.dart';
 
 class UserSignUpScreen extends StatefulWidget {
@@ -25,6 +26,20 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
   final dropctrl = TextEditingController();
   String? selectedItem;
   final dropvalues = ["1", "2", "3", "4"];
+  String? selectedCollege;
+  final clgnames = ["AEC", "ACET"];
+
+  bool isPasswordValid(String password) {
+    final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(password);
+  }
+  bool isEmailValid(String email) {
+    final pattern = r'^[\w-\.]+@(acet\.ac\.in|aec\.edu\.in)$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(email);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,22 +106,48 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                     ),
                     SizedBox(height: 15),
 
-                    TextField(
-                      controller: clgctrl,
-                      decoration: InputDecoration(
-                        hintText: 'College ID',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    Row(
+                      children: [
+                        Text("  College:",style: TextStyle(fontSize: 17),),
+                        SizedBox(width: 20,),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(width:1,color: Colors.grey)
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: DropdownMenu(
+                                hintText: "Select",
+                                selectedTrailingIcon: Icon(
+                                  Icons.arrow_drop_up,
+                                ),
+                                controller: clgctrl,
+                                onSelected: (vals) {
+                                  selectedCollege = vals;
+                                  setState(() {});
+                                },
+                                inputDecorationTheme: InputDecorationTheme(
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                ),
+                                menuStyle: MenuStyle(
+                                  backgroundColor: MaterialStateProperty.all(Colors.white),
+                                ),
+                                dropdownMenuEntries: clgnames.map((f) => DropdownMenuEntry(value: f, label: f)).toList()),
+                          ),
+
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                      ),
+                      ],
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 15,),
 
                     Row(
                       children: [
                         Text("  Year:",style: TextStyle(fontSize: 17),),
-                        Spacer(),
+                        SizedBox(width: 20,),
                         Container(
                           decoration: BoxDecoration(
                               color: Colors.white,
@@ -135,7 +176,6 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                                 ),
                                 dropdownMenuEntries: dropvalues.map((f) => DropdownMenuEntry(value: f, label: f)).toList()),
                           ),
-
                         ),
                       ],
                     ),
@@ -224,12 +264,25 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        if(passctrl.text.trim().isNotEmpty && emailctrl.text.trim().isNotEmpty && passctrl.text.trim().length>=6 && namectrl.text.trim().isNotEmpty && passctrl.text.trim()==conpassctrl.text.trim()){
-                          createAccount();
-                          //Navigator.push(context, MaterialPageRoute(builder: (context)=>));
+                        if (emailctrl.text.trim().isEmpty ||
+                            passctrl.text.trim().isEmpty ||
+                            namectrl.text.trim().isEmpty ||
+                            conpassctrl.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill all the fields")));
                         }
-                        else{
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill the form")));
+                        else if (!isPasswordValid(passctrl.text.trim())) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Password must be at least 8 characters,\ninclude a capital letter, number, and special character")));
+                        }
+                        else if (passctrl.text.trim() != conpassctrl.text.trim()) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Passwords do not match")));
+                        }
+                        else if (!isEmailValid(emailctrl.text.trim())) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Use college email (@acet.ac.in or @aec.edu.in)")));
+                        }
+                        else {
+                          createAccount();
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -262,7 +315,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
         password: passctrl.text.trim()
     ).then((value)async{
       String uid = value.user!.uid;
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      await FirebaseFirestore.instance.collection('students').doc(uid).set({
         'uid': uid,
         'email': emailctrl.text.trim(),
         'name': namectrl.text.trim(),

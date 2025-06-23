@@ -52,9 +52,9 @@
 //   }
 // }
 
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:quickform/Profile/LoginScreen.dart';
 import 'package:quickform/firebase_options.dart';
 
 import 'Profile/Roles_Screen.dart';
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: RolesScreen(),
+      home: LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
