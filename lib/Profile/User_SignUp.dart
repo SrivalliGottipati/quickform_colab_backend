@@ -1,19 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../main.dart';
 import 'LoginScreen.dart';
-
 class UserSignUpScreen extends StatefulWidget {
-
+  final String role;
+  const UserSignUpScreen({super.key, required this.role});
   @override
   State<UserSignUpScreen> createState() => _UserSignUpScreenState();
 }
-
 class _UserSignUpScreenState extends State<UserSignUpScreen> {
   final namectrl = TextEditingController();
   final rollctrl = TextEditingController();
@@ -28,9 +25,8 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
   final dropvalues = ["1", "2", "3", "4"];
   String? selectedCollege;
   final clgnames = ["AEC", "ACET"];
-
   bool isPasswordValid(String password) {
-    final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$';
+    final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&~]).{8,}$';
     final regex = RegExp(pattern);
     return regex.hasMatch(password);
   }
@@ -39,8 +35,6 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
     final regex = RegExp(pattern);
     return regex.hasMatch(email);
   }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +50,6 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
               height: 180,
             ),
           ),
-
           Expanded(
             child: Container(
               width: double.infinity,
@@ -326,6 +319,10 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
         'year': dropctrl.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
       });
+      await FirebaseFirestore.instance.collection('roles').doc(uid).set({
+        'role': widget.role,
+      });
+
       print('Account created with ${emailctrl.text}');
     }).onError((error, StackTrace){
       if(error is SocketException){

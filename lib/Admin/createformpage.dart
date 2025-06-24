@@ -77,7 +77,7 @@ class _CreateFormPageState extends State<CreateFormPage> {
           'targetBranches': selectedBranches,
           'targetSections': selectedSections,
           'targetYears': selectedYears,
-          'tragetColleges': selectedColleges,
+          'targetColleges': selectedColleges,
         };
 
         await FirebaseFirestore.instance.collection('forms').add(formData);
