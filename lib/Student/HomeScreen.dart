@@ -1,337 +1,9 @@
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-// class StudentScreen extends StatefulWidget {
-//   final String email;
-//   StudentScreen({
-//     required this.email,
-//   });
-//   @override
-//   _StudentScreenState createState() => _StudentScreenState();
-// }
-// class _StudentScreenState extends State<StudentScreen> with TickerProviderStateMixin {
-//   int _selectedIndex = 0;
-//   late AnimationController _titleController;
-//   late AnimationController _searchBarController;
-//   @override
-//   void initState() {
-//     super.initState();
-//     _titleController = AnimationController(
-//       vsync: this,
-//       duration: Duration(milliseconds: 700),
-//     );
-//     _searchBarController = AnimationController(
-//       vsync: this,
-//       duration: Duration(milliseconds: 800),
-//     );
-//     _titleController.forward();
-//     _searchBarController.forward();
-//   }
-//   @override
-//   void dispose() {
-//     _titleController.dispose();
-//     _searchBarController.dispose();
-//     super.dispose();
-//   }
-//   Future<List<Map<String, String>>> fetchForms() async {
-//     await Future.delayed(Duration(seconds: 2));
-//     return [
-//       {'title': 'Admission Form', 'description': 'Form for student admissions.', 'deadline': '20 Jun, 5:00 PM'},
-//       {'title': 'Scholarship Form', 'description': 'Apply for scholarships here.', 'deadline': '22 Jun, 11:59 PM'},
-//       {'title': 'Hostel Request', 'description': 'Request for hostel accommodation.', 'deadline': '25 Jun, 3:00 PM'},
-//       {'title': 'Library Access', 'description': 'Library membership form.', 'deadline': '30 Jun, 1:00 PM'},
-//       {'title': 'Internship Approval', 'description': 'Request internship approval.', 'deadline': '28 Jun, 10:00 AM'},
-//       {'title': 'Medical Leave', 'description': 'Apply for medical leave.', 'deadline': '18 Jun, 4:30 PM'},
-//       {'title': 'Exam Retake', 'description': 'Retake form for missed exams.', 'deadline': '19 Jun, 9:00 AM'},
-//       {'title': 'Course Drop', 'description': 'Drop a course officially.', 'deadline': '21 Jun, 2:00 PM'},
-//       {'title': 'Feedback Form', 'description': 'Provide course feedback.', 'deadline': '27 Jun, 8:00 PM'},
-//       {'title': 'Transport Request', 'description': 'Bus/Transport services request.', 'deadline': '23 Jun, 6:00 PM'},
-//     ];
-//   }
-//   void _onItemTapped(int index) {
-//     setState(() => _selectedIndex = index);
-//   }
-//   Widget buildMainContent() {
-//     if (_selectedIndex == 0) {
-//       return Column(
-//         key: ValueKey('formsPage'),
-//         children: [
-//           SizedBox(height: 50),
-//           FadeTransition(
-//             opacity: _titleController,
-//             child: SlideTransition(
-//               position: Tween<Offset>(begin: Offset(0, -0.2), end: Offset.zero)
-//                   .animate(_titleController),
-//               child: Text(
-//                 'Hello, ${widget.email.split('@')[0]}!',
-//                 style: GoogleFonts.montserrat(
-//                   fontSize: 26,
-//                   fontWeight: FontWeight.w600,
-//                   color: Colors.black87,
-//                 ),
-//               ),
-//             ),
-//           ),
-//           SizedBox(height: 30),
-//           Expanded(
-//             child: FutureBuilder<List<Map<String, String>>>(
-//               future: fetchForms(),
-//               builder: (context, snapshot) {
-//                 if (snapshot.connectionState == ConnectionState.waiting) {
-//                   return Center(
-//                       child: CircularProgressIndicator(color: Colors.blueAccent));
-//                 } else if (snapshot.hasError) {
-//                   return Center(child: Text('Error loading forms.'));
-//                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//                   return Center(child: Text('No forms available.'));
-//                 }
-//
-//                 final forms = snapshot.data!;
-//                 return ListView.builder(
-//                   padding: EdgeInsets.symmetric(horizontal: 16),
-//                   itemCount: forms.length,
-//                   itemBuilder: (context, index) {
-//                     return TweenAnimationBuilder(
-//                       duration: Duration(milliseconds: 400 + index * 100),
-//                       tween: Tween<double>(begin: 0, end: 1),
-//                       curve: Curves.easeOutCubic,
-//                       builder: (context, value, child) {
-//                         return Opacity(
-//                           opacity: value,
-//                           child: Transform.translate(
-//                             offset: Offset(0, 50 * (1 - value)),
-//                             child: child,
-//                           ),
-//                         );
-//                       },
-//                       child: Card(
-//                         color: Colors.white.withOpacity(0.9),
-//                         shadowColor: Colors.blueAccent.withOpacity(0.2),
-//                         margin: EdgeInsets.only(bottom: 16),
-//                         shape: RoundedRectangleBorder(
-//                           borderRadius: BorderRadius.circular(16),
-//                         ),
-//                         elevation: 8,
-//                         child: Padding(
-//                           padding: const EdgeInsets.all(16.0),
-//                           child: Column(
-//                             crossAxisAlignment: CrossAxisAlignment.start,
-//                             children: [
-//                               Text(forms[index]['title'] ?? '',
-//                                   style: GoogleFonts.montserrat(
-//                                       fontWeight: FontWeight.bold,
-//                                       fontSize: 18)),
-//                               SizedBox(height: 4),
-//                               Text(forms[index]['description'] ?? '',
-//                                   style: GoogleFonts.montserrat()),
-//                               SizedBox(height: 6),
-//                               Text('Deadline: ${forms[index]['deadline']}',
-//                                   style: GoogleFonts.montserrat(
-//                                     color: Colors.redAccent,
-//                                     fontSize: 13,
-//                                     fontWeight: FontWeight.w500,
-//                                   )),
-//                               SizedBox(height: 10),
-//                               Align(
-//                                 alignment: Alignment.centerRight,
-//                                 child: AnimatedScale(
-//                                   duration: Duration(milliseconds: 200),
-//                                   scale: 1,
-//                                   child: ElevatedButton(
-//                                     onPressed: () {},
-//                                     style: ElevatedButton.styleFrom(
-//                                       backgroundColor: Color.fromRGBO(142, 224, 243,1),
-//                                       foregroundColor: Colors.white,
-//                                       elevation: 4,
-//                                       shape: RoundedRectangleBorder(
-//                                         borderRadius: BorderRadius.circular(24),
-//                                       ),
-//                                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-//                                     ),
-//                                     child: Text("View Form",
-//                                         style: GoogleFonts.montserrat(color:Colors.black )),
-//                                   ),
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                 );
-//               },
-//             ),
-//           ),
-//         ],
-//       );
-//     } else if (_selectedIndex == 1) {
-//       final tiles = [
-//         {'icon': Icons.article, 'label': 'Filled'},
-//         {'icon': Icons.access_time, 'label': 'Expired'},
-//         {'icon': Icons.info_outline, 'label': 'Details'},
-//         {'icon': Icons.settings, 'label': 'Settings'},
-//       ];
-//       return ListView.builder(
-//         key: ValueKey('filledPage'),
-//         padding: EdgeInsets.symmetric(vertical: 16),
-//         itemCount: tiles.length,
-//         itemBuilder: (context, index) {
-//           return TweenAnimationBuilder(
-//             duration: Duration(milliseconds: 300 + index * 100),
-//             tween: Tween<double>(begin: 0, end: 1),
-//             builder: (context, value, child) {
-//               return Opacity(
-//                 opacity: value,
-//                 child: Transform.translate(
-//                   offset: Offset(0, 30 * (1 - value)),
-//                   child: child,
-//                 ),
-//               );
-//             },
-//             child: ListTile(
-//               leading: Icon(tiles[index]['icon'] as IconData, color: Colors.black87),
-//               title: Text(tiles[index]['label'] as String,
-//                   style: GoogleFonts.montserrat(color: Colors.black87)),
-//               onTap: () {},
-//             ),
-//           );
-//         },
-//       );
-//     } else {
-//       return Center(
-//         key: ValueKey('profilePage'),
-//         child: TweenAnimationBuilder(
-//           duration: Duration(milliseconds: 500),
-//           tween: Tween<double>(begin: 0, end: 1),
-//           builder: (context, value, child) {
-//             return Opacity(
-//               opacity: value,
-//               child: Transform.scale(scale: value, child: child),
-//             );
-//           },
-//           child: Text(
-//             'Profile Section',
-//             style: GoogleFonts.montserrat(fontSize: 20, color: Colors.black87),
-//           ),
-//         ),
-//       );
-//     }
-//   }
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       decoration: BoxDecoration(
-//         gradient: LinearGradient(
-//           begin: Alignment.topCenter,
-//           end: Alignment.bottomCenter,
-//           colors: [
-//             Color.fromARGB(255, 86, 198, 242),
-//             Color.fromARGB(255, 128, 198, 242),
-//             Color.fromARGB(255, 139, 227, 244),
-//             Color.fromARGB(255, 210, 227, 244),
-//           ],
-//           stops: [0.0, 0.2, 0.6, 0.7],
-//         ),
-//       ),
-//       child: Scaffold(
-//         backgroundColor: Colors.transparent,
-//         extendBody: true,
-//         extendBodyBehindAppBar: true,
-//         appBar: AppBar(
-//           backgroundColor: Colors.transparent,
-//           elevation: 0,
-//           title: SlideTransition(
-//             position: Tween<Offset>(
-//               begin: Offset(0, -0.4),
-//               end: Offset.zero,
-//             ).animate(CurvedAnimation(
-//               parent: _searchBarController,
-//               curve: Curves.easeOut,
-//             )),
-//             child: TextField(
-//               style: GoogleFonts.montserrat(),
-//               decoration: InputDecoration(
-//                 hintText: 'Search',
-//                 hintStyle: GoogleFonts.montserrat(),
-//                 prefixIcon: Icon(Icons.search),
-//                 filled: true,
-//                 fillColor: Colors.white60,
-//                 contentPadding: EdgeInsets.symmetric(vertical: 0),
-//                 border: OutlineInputBorder(
-//                   borderRadius: BorderRadius.circular(30),
-//                   borderSide: BorderSide.none,
-//                 ),
-//               ),
-//             ),
-//           ),
-//           actions: [
-//             Padding(
-//               padding: const EdgeInsets.only(right: 12.0),
-//               child: Icon(Icons.notifications, color: Colors.black87),
-//             ),
-//           ],
-//         ),
-//         body: SafeArea(
-//           child: AnimatedSwitcher(
-//             duration: Duration(milliseconds: 500),
-//             transitionBuilder: (child, animation) => FadeTransition(
-//               opacity: animation,
-//               child: SlideTransition(
-//                 position: Tween<Offset>(
-//                   begin: Offset(0.1, 0),
-//                   end: Offset.zero,
-//                 ).animate(animation),
-//                 child: child,
-//               ),
-//             ),
-//             child: buildMainContent(),
-//           ),
-//         ),
-//         bottomNavigationBar: ClipRRect(
-//           borderRadius: BorderRadius.only(
-//             topLeft: Radius.circular(30),
-//             topRight: Radius.circular(30),
-//           ),
-//           child: Container(
-//             height: 95,
-//             decoration: BoxDecoration(color: Colors.white),
-//             child: BottomNavigationBar(
-//               backgroundColor: Colors.transparent,
-//               currentIndex: _selectedIndex,
-//               selectedItemColor: Colors.black,
-//               unselectedItemColor: Colors.lightBlueAccent,
-//               elevation: 0,
-//               selectedLabelStyle: GoogleFonts.montserrat(),
-//               unselectedLabelStyle: GoogleFonts.montserrat(),
-//               onTap: _onItemTapped,
-//               items: const [
-//                 BottomNavigationBarItem(
-//                   icon: Icon(Icons.description_outlined),
-//                   label: 'Forms',
-//                 ),
-//                 BottomNavigationBarItem(
-//                   icon: Icon(Icons.check_circle_outline),
-//                   label: 'Filled Forms',
-//                 ),
-//                 BottomNavigationBarItem(
-//                   icon: Icon(Icons.person_outline),
-//                   label: 'Profile',
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'ExpiredForms_Student.dart';
+import 'FormDetails_Student.dart';
 
 class StudentScreen extends StatefulWidget {
   final String email;
@@ -347,8 +19,10 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
   late AnimationController _searchBarController;
 
   late String studentEmail;
-  late Map<String, dynamic> studentData;
   late Future<List<Map<String, String>>> _formsFuture;
+
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -371,9 +45,9 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
   void dispose() {
     _titleController.dispose();
     _searchBarController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
-
 
   Future<Map<String, dynamic>> fetchStudentInfoByUID(String uid) async {
     final docSnapshot = await FirebaseFirestore.instance
@@ -388,28 +62,16 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
   Future<List<Map<String, String>>> fetchForms() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception('No logged-in user');
-      }
+      if (user == null) throw Exception('No logged-in user');
       final currentUserID = user.uid;
 
       final studentData = await fetchStudentInfoByUID(currentUserID);
-      print("Student Data: $studentData");
-
-      // Convert year to int (if stored as string)
-      int studentYear;
-      if (studentData['year'] is int) {
-        studentYear = studentData['year'];
-      } else if (studentData['year'] is String) {
-        studentYear = int.tryParse(studentData['year'].trim()) ?? -1;
-      } else {
-        studentYear = -1;
-      }
-
-      // Trim student section
-      String studentSection = (studentData['section'] ?? '').toString().trim();
-      String studentBranchId = (studentData['branchId'] ?? '').toString().trim();
-      String studentCollegeId = (studentData['collegeId'] ?? '').toString().trim();
+      int studentYear = studentData['year'] is int
+          ? studentData['year']
+          : int.tryParse(studentData['year'].toString().trim()) ?? -1;
+      String studentSection = studentData['section'].toString().trim();
+      String studentBranchId = studentData['branchId'].toString().trim();
+      String studentCollegeId = studentData['collegeId'].toString().trim();
 
       final formsSnapshot = await FirebaseFirestore.instance
           .collection('forms')
@@ -420,9 +82,8 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
 
       for (var doc in formsSnapshot.docs) {
         final data = doc.data();
-
         final List<dynamic>? targetYears = data['targetYears'];
-        final List<dynamic>? targetColleges = data['tragetColleges']; // Use exact field name from your DB
+        final List<dynamic>? targetColleges = data['tragetColleges']; // typo in DB field
 
         if (targetYears == null || !targetYears.contains(studentYear)) continue;
         if (targetColleges == null || !targetColleges.map((e) => e.toString().trim()).contains(studentCollegeId)) continue;
@@ -432,6 +93,11 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
 
         if (targetBranches != null && !targetBranches.map((e) => e.toString().trim()).contains(studentBranchId)) continue;
         if (targetSections != null && !targetSections.map((e) => e.toString().trim()).contains(studentSection)) continue;
+
+        final expiresAt = data['expiresAt'];
+        if (expiresAt != null && (expiresAt as Timestamp).toDate().isBefore(DateTime.now())) {
+          continue; // ⛔️ SKIP expired forms
+        }
 
         matchedForms.add({
           'title': data['title'] ?? '',
@@ -447,143 +113,152 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
     } catch (e, stacktrace) {
       print('Error in fetchForms: $e');
       print(stacktrace);
-      rethrow; // so FutureBuilder receives the error
+      rethrow;
     }
   }
 
+  String _calculateTimeLeft(String? deadlineString) {
+    if (deadlineString == null || deadlineString.isEmpty) return '';
+    try {
+      final deadline = DateTime.parse(deadlineString);
+      final now = DateTime.now();
+      final difference = deadline.difference(now);
+      if (difference.isNegative) return "Expired";
+      if (difference.inDays > 0) return "${difference.inDays} day${difference.inDays > 1 ? 's' : ''} left";
+      if (difference.inHours > 0) return "${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} left";
+      return "${difference.inMinutes} min left";
+    } catch (_) {
+      return '';
+    }
+  }
 
-
-
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+  void _onMenuSelect(int index) {
+    Navigator.pop(context); // Close drawer
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   Widget buildMainContent() {
     if (_selectedIndex == 0) {
-      return Column(
-        key: ValueKey('formsPage'),
-        children: [
-          SizedBox(height: 50),
-          FadeTransition(
-            opacity: _titleController,
-            child: SlideTransition(
-              position: Tween<Offset>(begin: Offset(0, -0.2), end: Offset.zero).animate(_titleController),
-              child: Text(
-                'Hello, ${widget.email.split('@')[0]}!',
-                style: GoogleFonts.montserrat(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 30),
-          Expanded(
-            child: FutureBuilder<List<Map<String, String>>>(
-              future: _formsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: Colors.blueAccent));
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error loading forms.'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No forms available.'));
-                }
+      return FutureBuilder<List<Map<String, String>>>(
+        future: _formsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator(color: Colors.blueAccent));
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error loading forms.'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No forms available.'));
+          }
 
-                final forms = snapshot.data!;
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: forms.length,
-                  itemBuilder: (context, index) {
-                    return TweenAnimationBuilder(
-                      duration: Duration(milliseconds: 400 + index * 100),
-                      tween: Tween<double>(begin: 0, end: 1),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, value, child) {
-                        return Opacity(
-                          opacity: value,
-                          child: Transform.translate(
-                            offset: Offset(0, 50 * (1 - value)),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Card(
-                        color: Colors.white.withOpacity(0.9),
-                        shadowColor: Colors.blueAccent.withOpacity(0.2),
-                        margin: EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(forms[index]['title'] ?? '',
-                                  style: GoogleFonts.montserrat(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18)),
-                              SizedBox(height: 4),
-                              Text(forms[index]['description'] ?? '',
-                                  style: GoogleFonts.montserrat()),
-                              SizedBox(height: 6),
-                              Text('Deadline: ${forms[index]['deadline']}',
-                                  style: GoogleFonts.montserrat(
-                                    color: Colors.redAccent,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                              SizedBox(height: 10),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: AnimatedScale(
-                                  duration: Duration(milliseconds: 200),
-                                  scale: 1,
-                                  child: ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color.fromRGBO(142, 224, 243, 1),
-                                      foregroundColor: Colors.white,
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                    ),
-                                    child: Text("View Form",
-                                        style: GoogleFonts.montserrat(color: Colors.black)),
-                                  ),
+          final forms = snapshot.data!;
+          final filteredForms = forms.where((form) {
+            final title = form['title']?.toLowerCase() ?? '';
+            return title.contains(_searchQuery);
+          }).toList();
+
+          if (filteredForms.isEmpty) {
+            return Center(child: Text('No matching forms found.'));
+          }
+
+          return ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            itemCount: filteredForms.length,
+            itemBuilder: (context, index) {
+              return TweenAnimationBuilder(
+                duration: Duration(milliseconds: 400 + index * 100),
+                tween: Tween<double>(begin: 0, end: 1),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 50 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Card(
+                  color: Colors.white.withOpacity(0.95),
+                  margin: EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                filteredForms[index]['title'] ?? '',
+                                style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.black87,
                                 ),
                               ),
-                            ],
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              _calculateTimeLeft(filteredForms[index]['deadline']),
+                              style: GoogleFonts.montserrat(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          filteredForms[index]['description'] ?? '',
+                          style: GoogleFonts.montserrat(fontSize: 13.5, color: Colors.grey[800]),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FormDetailsScreen(form: filteredForms[index]),
+                                ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.blueAccent,
+                            ),
+                            child: Text(
+                              "View Form",
+                              style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       );
     } else if (_selectedIndex == 1) {
       return Center(child: Text('Filled Forms Page'));
     } else {
-      return Center(
-        key: ValueKey('profilePage'),
-        child: TweenAnimationBuilder(
-          duration: Duration(milliseconds: 500),
-          tween: Tween<double>(begin: 0, end: 1),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.scale(scale: value, child: child),
-            );
-          },
+      return TweenAnimationBuilder(
+        duration: Duration(milliseconds: 500),
+        tween: Tween<double>(begin: 0, end: 1),
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: Transform.scale(scale: value, child: child),
+          );
+        },
+        child: Center(
           child: Text(
             'Profile Section',
             style: GoogleFonts.montserrat(fontSize: 20, color: Colors.black87),
@@ -613,30 +288,57 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
         backgroundColor: Colors.transparent,
         extendBody: true,
         extendBodyBehindAppBar: true,
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(color: Colors.blueAccent),
+                child: Text(
+                  'Welcome ${widget.email.split('@')[0]}',
+                  style: GoogleFonts.montserrat(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.description_outlined),
+                title: Text('Forms'),
+                onTap: () => _onMenuSelect(0),
+              ),
+              ListTile(
+                leading: Icon(Icons.check_circle_outline),
+                title: Text('Filled Forms'),
+                onTap: () => _onMenuSelect(1),
+              ),
+              ListTile(
+                leading: Icon(Icons.check_circle_outline),
+                title: Text('Expired Forms'),
+                onTap: () {
+                  Navigator.pop(context); // close drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ExpiredFormsScreen()),
+                  );
+                },
+              ),
+
+              ListTile(
+                leading: Icon(Icons.person_outline),
+                title: Text('Profile'),
+                onTap: () => _onMenuSelect(3),
+              ),
+            ],
+          ),
+        ),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(0, -0.4),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: _searchBarController,
-              curve: Curves.easeOut,
-            )),
-            child: TextField(
-              style: GoogleFonts.montserrat(),
-              decoration: InputDecoration(
-                hintText: 'Search',
-                hintStyle: GoogleFonts.montserrat(),
-                prefixIcon: Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white60,
-                contentPadding: EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
+          title: FadeTransition(
+            opacity: _titleController,
+            child: SlideTransition(
+              position: Tween<Offset>(begin: Offset(0, -0.2), end: Offset.zero).animate(_titleController),
+              child: Text(
+                'Hello, ${widget.email.split('@')[0]}!',
+                style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ),
           ),
@@ -648,57 +350,55 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
           ],
         ),
         body: SafeArea(
-          child: AnimatedSwitcher(
-            duration: Duration(milliseconds: 500),
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: Offset(0.1, 0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: Offset(0, 0.4),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: _searchBarController, curve: Curves.easeOut)),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.trim().toLowerCase();
+                      });
+                    },
+                    style: GoogleFonts.montserrat(),
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: GoogleFonts.montserrat(),
+                      prefixIcon: Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white60,
+                      contentPadding: EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: buildMainContent(),
-          ),
-        ),
-        bottomNavigationBar: ClipRRect(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          child: Container(
-            height: 95,
-            decoration: BoxDecoration(color: Colors.white),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.transparent,
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.black,
-              unselectedItemColor: Colors.lightBlueAccent,
-              elevation: 0,
-              selectedLabelStyle: GoogleFonts.montserrat(),
-              unselectedLabelStyle: GoogleFonts.montserrat(),
-              onTap: _onItemTapped,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.description_outlined),
-                  label: 'Forms',
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: Duration(milliseconds: 500),
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(begin: Offset(0.1, 0), end: Offset.zero).animate(animation),
+                      child: child,
+                    ),
+                  ),
+                  child: buildMainContent(),
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.check_circle_outline),
-                  label: 'Filled Forms',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  label: 'Profile',
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-

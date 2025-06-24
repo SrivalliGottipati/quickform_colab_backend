@@ -1,0 +1,234 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'FormDetails_Student.dart';
+
+class ExpiredFormsScreen extends StatefulWidget {
+  const ExpiredFormsScreen({Key? key}) : super(key: key);
+
+  @override
+  _ExpiredFormsScreenState createState() => _ExpiredFormsScreenState();
+}
+
+class _ExpiredFormsScreenState extends State<ExpiredFormsScreen> {
+  late Future<List<Map<String, String>>> _expiredFormsFuture;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _expiredFormsFuture = fetchExpiredForms();
+  }
+
+  Future<List<Map<String, String>>> fetchExpiredForms() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('forms')
+        .where('status', isEqualTo: 'active')
+        .get();
+
+    final now = DateTime.now();
+    final expiredForms = <Map<String, String>>[];
+
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final expiresAt = data['expiresAt'];
+      if (expiresAt != null && (expiresAt as Timestamp).toDate().isBefore(now)) {
+        expiredForms.add({
+          'title': data['title'] ?? '',
+          'description': data['description'] ?? '',
+          'deadline': (expiresAt as Timestamp).toDate().toLocal().toString(),
+          'link': data['link'] ?? '',
+        });
+      }
+    }
+
+    return expiredForms;
+  }
+
+  String _formatDeadline(String? deadlineString) {
+    if (deadlineString == null || deadlineString.isEmpty) return '';
+    try {
+      final deadline = DateTime.parse(deadlineString);
+      return "${deadline.day}/${deadline.month}/${deadline.year} ${deadline.hour}:${deadline.minute}";
+    } catch (_) {
+      return '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text('Expired Forms', style: GoogleFonts.montserrat(color: Colors.black87)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black87),
+      ),
+      body: Stack(
+        children: [
+          // Background gradient (same as home page)
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFB2FEFA),
+                  Color(0xFF0ED2F7),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+
+          // Foreground UI
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.trim().toLowerCase();
+                      });
+                    },
+                    style: GoogleFonts.montserrat(),
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: GoogleFonts.montserrat(),
+                      prefixIcon: Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white60,
+                      contentPadding: EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FutureBuilder<List<Map<String, String>>>(
+                    future: _expiredFormsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator(color: Colors.blueAccent));
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error loading expired forms.'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text('No expired forms.'));
+                      }
+
+                      final forms = snapshot.data!;
+                      final filteredForms = forms.where((form) {
+                        final title = form['title']?.toLowerCase() ?? '';
+                        return title.contains(_searchQuery);
+                      }).toList();
+
+                      if (filteredForms.isEmpty) {
+                        return Center(child: Text('No matching forms found.'));
+                      }
+
+                      return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredForms.length,
+                        itemBuilder: (context, index) {
+                          return TweenAnimationBuilder(
+                            duration: Duration(milliseconds: 400 + index * 100),
+                            tween: Tween<double>(begin: 0, end: 1),
+                            builder: (context, value, child) {
+                              return Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, 50 * (1 - value)),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Card(
+                              color: Colors.white.withOpacity(0.95),
+                              margin: EdgeInsets.only(bottom: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 4,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            filteredForms[index]['title'] ?? '',
+                                            style: GoogleFonts.montserrat(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 16,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Expired',
+                                          style: GoogleFonts.montserrat(
+                                            color: Colors.redAccent,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      filteredForms[index]['description'] ?? '',
+                                      style: GoogleFonts.montserrat(fontSize: 13.5, color: Colors.grey[800]),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => FormDetailsScreen(form: filteredForms[index]),
+                                            ),
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.blueAccent,
+                                        ),
+                                        child: Text(
+                                          "View Form",
+                                          style: GoogleFonts.montserrat(fontSize: 13.5, fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
