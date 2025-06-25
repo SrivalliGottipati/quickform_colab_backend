@@ -31,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       String uid = userCred.user!.uid;
 
-      // Fetch role from Firestore
       DocumentSnapshot roleDoc = await FirebaseFirestore.instance
           .collection('roles')
           .doc(uid)
@@ -51,25 +50,29 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => const HomePage()), // Your admin homepage
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Unknown role. Please contact support.")),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text("Unknown role. Please contact support.")),
+          // );
+          showPopupMessage(context, "Unknown role. Please contact support");
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Role not assigned. Contact support.")),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text("Role not assigned. Contact support.")),
+        // );
+        showPopupMessage(context, "Role not assigned. Contact support");
       }
     } on SocketException {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please connect to the internet")),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text("Please connect to the internet")),
+      // );
+      showPopupMessage(context, "Please connect to the internet");
     } on FirebaseAuthException catch (e) {
       authErrors(e.code);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Unexpected error: $e")),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Unexpected error: $e")),
+      // );
+      showPopupMessage(context, "Unexpected error: $e");
     }
   }
 
@@ -78,14 +81,33 @@ class _LoginScreenState extends State<LoginScreen> {
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailctrl.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password reset link has been sent to your email")),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text("Password reset link has been sent to your email")),
+      // );
+      showPopupMessage(context, "Password reset link has been sent to your email");
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to send reset link: $error")),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Failed to send reset link: $error")),
+      // );
+      showPopupMessage(context, "Failed to send reset link: $error");
     }
+  }
+
+  void showPopupMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text("Notice"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -94,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color.fromARGB(255, 155, 201, 239),
       body: SafeArea(
         child: SingleChildScrollView(
-          reverse: true, // ensures bottom widgets stay visible when keyboard appears
+          reverse: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -174,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               passctrl.text.trim().length >= 6) {
                             RolesSelection();
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill the form")));
+                            showPopupMessage(context, "Please fill the form");
                           }
                         },
                         child: Container(
@@ -250,8 +272,6 @@ class _LoginScreenState extends State<LoginScreen> {
         message = "Authentication failed. [$code]";
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    showPopupMessage(context, "$message");
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quickform/Admin/Homepage.dart';
 
 import 'LoginScreen.dart';
 
@@ -31,6 +32,45 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
 
   final List<String> dropvalues = ['Thub', 'Placement', 'College'];
   final List<String> colleges = ['AU', 'ACET'];
+
+  bool isPasswordValid(String password) {
+    final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&~]).{8,}$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(password);
+  }
+  bool isEmailValid(String email) {
+    final pattern = r'^[\w-\.]+@gmail\.com$';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(email);
+  }
+
+  OutlineInputBorder normalBorder = OutlineInputBorder(
+    borderSide: BorderSide(color: Colors.grey),
+    borderRadius: BorderRadius.circular(10),
+  );
+
+  OutlineInputBorder errorBorder = OutlineInputBorder(
+    borderSide: BorderSide(color: Colors.red, width: 2),
+    borderRadius: BorderRadius.circular(10),
+  );
+
+  void showPopupMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text("Notice"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     dropctrl.dispose();
@@ -113,7 +153,7 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(6),
                         child: DropdownMenu<String>(
-                          hintText: "Select",
+                          hintText: "Select group",
                           selectedTrailingIcon: Icon(Icons.arrow_drop_up),
                           controller: dropctrl,
                           onSelected: (val) {
@@ -195,6 +235,9 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)
+                        ),
                         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                       ),
                     ),
@@ -208,6 +251,9 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                       ),
                     ),
@@ -219,6 +265,9 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                       decoration: InputDecoration(
                         hintText: 'Confirm Password',
                         border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
@@ -247,12 +296,27 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        if(passctrl.text.trim().isNotEmpty && emailctrl.text.trim().isNotEmpty && passctrl.text.trim().length>=6 && namectrl.text.trim().isNotEmpty && passctrl.text.trim()==conpassctrl.text.trim()){
-                          createAccount();
-                          //Navigator.push(context, MaterialPageRoute(builder: (context)=>));
+                        if (emailctrl.text.trim().isEmpty ||
+                            passctrl.text.trim().isEmpty ||
+                            namectrl.text.trim().isEmpty ||
+                            conpassctrl.text.trim().isEmpty) {
+                          showPopupMessage(context, "Please fill all the fields");
                         }
-                        else{
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill the form")));
+                        else if (!isPasswordValid(passctrl.text.trim())) {
+                          showPopupMessage(context, "Password must be at least 8 characters,\ninclude a capital letter, number, and special character");
+                        }
+                        else if (passctrl.text.trim() != conpassctrl.text.trim()) {
+                          showPopupMessage(context, "Passwords do not match");
+                        }
+                        else if (!isEmailValid(emailctrl.text.trim())) {
+                          showPopupMessage(context, "Use gmail account");
+                        }
+                        else {
+                          createAccount();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()), // Your admin homepage
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -316,11 +380,11 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
 
   void authErrors(String code){
     if(code == "The email address is already in use by another account"){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Email already exists")));
+      showPopupMessage(context, "Email already exists");
     }
     else{
       String mess = code.replaceAll("-", " ").toString();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mess)));
+      showPopupMessage(context, "$mess");
     }
   }
 

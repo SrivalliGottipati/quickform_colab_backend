@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,30 +22,84 @@ class _ExpiredFormsScreenState extends State<ExpiredFormsScreen> {
     _expiredFormsFuture = fetchExpiredForms();
   }
 
-  Future<List<Map<String, String>>> fetchExpiredForms() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('forms')
-        .where('status', isEqualTo: 'active')
+  Future<Map<String, dynamic>> fetchStudentInfoByUID(String uid) async {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('students')
+        .doc(uid)
         .get();
 
-    final now = DateTime.now();
-    final expiredForms = <Map<String, String>>[];
-
-    for (final doc in snapshot.docs) {
-      final data = doc.data();
-      final expiresAt = data['expiresAt'];
-      if (expiresAt != null && (expiresAt as Timestamp).toDate().isBefore(now)) {
-        expiredForms.add({
-          'title': data['title'] ?? '',
-          'description': data['description'] ?? '',
-          'deadline': (expiresAt as Timestamp).toDate().toLocal().toString(),
-          'link': data['link'] ?? '',
-        });
-      }
-    }
-
-    return expiredForms;
+    if (!docSnapshot.exists) throw Exception('Student not found');
+    return docSnapshot.data()!;
   }
+
+  Future<List<Map<String, String>>> fetchExpiredForms() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('No logged-in user');
+      final currentUserID = user.uid;
+
+
+      final studentData = await fetchStudentInfoByUID(currentUserID);
+
+      // Extract student details
+      String studentYear = studentData['year'].toString().trim();
+      String studentSection = studentData['section'].toString().trim();
+      String studentBranch = studentData['branch'].toString().trim();
+      String studentCollege = studentData['college'].toString().trim();
+      String studentCourse = studentData['course'].toString().trim();
+
+      final formsSnapshot = await FirebaseFirestore.instance
+          .collection('forms')
+          .where('status', isEqualTo: 'active') // Only consider 'active' forms
+          .get();
+
+      final List<Map<String, String>> expiredForms = [];
+      final now = DateTime.now();
+
+      for (var doc in formsSnapshot.docs) {
+        final data = doc.data();
+
+        final List<dynamic>? targetYears = data['targetyear'];
+        final List<dynamic>? targetColleges = data['targetcollege'];
+        final List<dynamic>? targetBranches = data['targetbranch'];
+        final List<dynamic>? targetSections = data['targetsection'];
+        final List<dynamic>? targetCourses = data['targetcourse'];
+
+        // Match only if list is non-empty
+        if (targetYears != null && targetYears.isNotEmpty &&
+            !targetYears.contains(studentYear)) continue;
+
+        if (targetColleges != null && targetColleges.isNotEmpty &&
+            !targetColleges.map((e) => e.toString().trim()).contains(studentCollege)) continue;
+
+        if (targetBranches != null && targetBranches.isNotEmpty &&
+            !targetBranches.map((e) => e.toString().trim()).contains(studentBranch)) continue;
+
+        if (targetSections != null && targetSections.isNotEmpty &&
+            !targetSections.map((e) => e.toString().trim()).contains(studentSection)) continue;
+
+        if (targetCourses != null && targetCourses.isNotEmpty &&
+            !targetCourses.map((e) => e.toString().trim()).contains(studentCourse)) continue;
+
+        final expiresAt = data['expiresAt'];
+        if (expiresAt != null && (expiresAt as Timestamp).toDate().isBefore(now)) {
+          expiredForms.add({
+            'title': data['title'] ?? '',
+            'description': data['description'] ?? '',
+            'deadline': (expiresAt).toDate().toLocal().toString(),
+            'link': data['link'] ?? '',
+          });
+        }
+      }
+
+      return expiredForms;
+    } catch (e, stacktrace) {
+      print('Error in fetchExpiredForms: $e');
+      print(stacktrace);
+      rethrow;
+    }
+  }
+
 
   String _formatDeadline(String? deadlineString) {
     if (deadlineString == null || deadlineString.isEmpty) return '';
