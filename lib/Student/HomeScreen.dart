@@ -73,6 +73,7 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
       String studentBranch = studentData['branch'].toString().trim();     // e.g., "AIML"
       String studentCollege = studentData['college'].toString().trim();   // e.g., "AU"
       String studentCourse = studentData['course'].toString().trim();     // e.g., "B Tech"
+      String ThubStatus = studentData['thubStatus'].toString().trim();
 
       final formsSnapshot = await FirebaseFirestore.instance
           .collection('forms')
@@ -89,6 +90,7 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
         final List<dynamic>? targetBranches = data['targetbranch'];
         final List<dynamic>? targetSections = data['targetsection'];
         final List<dynamic>? targetCourses = data['targetcourse'];
+        final List<dynamic>? targetType = data['type'];
 
         // Match only if list is non-empty
         if (targetYears != null && targetYears.isNotEmpty &&
@@ -105,6 +107,9 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
 
         if (targetCourses != null && targetCourses.isNotEmpty &&
             !targetCourses.map((e) => e.toString().trim()).contains(studentCourse)) continue;
+
+        if (targetType != null && targetType.isNotEmpty &&
+            !targetType.map((e) => e.toString().trim()).contains(ThubStatus)) continue;
 
         // Skip expired forms
         final expiresAt = data['expiresAt'];
