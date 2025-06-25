@@ -45,3 +45,8 @@ android {
 flutter {
     source = "../.."
 }
+
+//dependencies {
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+//    implementation 'com.google.firebase:firebase-messaging:23.4.1'
+//}

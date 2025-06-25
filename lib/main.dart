@@ -7,11 +7,13 @@ import 'Admin/form_provider.dart';
 import 'Admin/user_provider.dart';
 import 'Authentication/Auth_Change.dart';
 import 'Authentication/LoginScreen.dart';
+import 'Student/Filled_Form_Provider.dart';
 
 
 final adminProviders = <ChangeNotifierProvider>[
   ChangeNotifierProvider<FormsProvider>(create: (_) => FormsProvider()),
   ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+  ChangeNotifierProvider<FilledFormsProvider>(create: (_) => FilledFormsProvider()),
 ];
 
 void main() async {
