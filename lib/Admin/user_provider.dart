@@ -14,6 +14,11 @@ class UserProvider extends ChangeNotifier {
   String get role => _role;
 
 
+  void logout() {
+    clearUser();
+  }
+
+
   // Method to set user data (called at signup/login)
   void setUser({
     required String name,

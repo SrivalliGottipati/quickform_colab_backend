@@ -88,27 +88,6 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 5),
             ProfileInfoBox(icon: Icons.person_pin, label: 'Role', value: user.role),
 
-            const Spacer(),
-
-            SizedBox(
-              width: 100,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  user.clearUser();
-                  Navigator.pushReplacementNamed(context, '/');
-                },
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  textStyle: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
           ],
         ),
       ),

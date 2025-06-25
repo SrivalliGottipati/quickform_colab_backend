@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../Authentication/LoginScreen.dart';
 import 'ExpiredForms_Student.dart';
 import 'FormDetails_Student.dart';
 
@@ -356,6 +357,25 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
                 title: Text('Profile'),
                 onTap: () => _onMenuSelect(3),
               ),
+
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
+                onTap: () async {
+                  Navigator.pop(context); // Close the drawer
+
+                  await FirebaseAuth.instance.signOut();
+
+
+
+                  // OR if you're not using named routes, use this:
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
+                    (route) => false,
+                  );
+                },
+              ),
+
             ],
           ),
         ),

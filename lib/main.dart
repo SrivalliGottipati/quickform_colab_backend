@@ -5,7 +5,9 @@ import 'package:quickform/firebase_options.dart';
 
 import 'Admin/form_provider.dart';
 import 'Admin/user_provider.dart';
-import 'Profile/LoginScreen.dart';
+import 'Authentication/Auth_Change.dart';
+import 'Authentication/LoginScreen.dart';
+
 
 final adminProviders = <ChangeNotifierProvider>[
   ChangeNotifierProvider<FormsProvider>(create: (_) => FormsProvider()),
@@ -30,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LoginScreen(),
+      home: AuthChange(),
       debugShowCheckedModeBanner: false,
     );
   }

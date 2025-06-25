@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickform/Admin/profile_page.dart';
-import 'user_provider.dart'; // Adjust the path if needed
-
+import '../Authentication/LoginScreen.dart';
+import 'user_provider.dart'; // Adjust path if needed
 import 'createformpage.dart';
-
 
 class MenuDrawer extends StatelessWidget {
   const MenuDrawer({super.key});
@@ -36,75 +35,77 @@ class MenuDrawer extends StatelessWidget {
             ),
           ),
 
-          // Create Form Styled Tile
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.lightBlueAccent),
-                borderRadius: BorderRadius.circular(12),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: Colors.blue.shade100,
-                //     blurRadius: 4,
-                //     offset: const Offset(2, 2),
-                //   ),
-                // ],
-              ),
-              child: ListTile(
-                leading: const Icon(Icons.create, color: Colors.lightBlue),
-                title: const Text('Create Form',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CreateFormPage()),
-                  );
-                },
-              ),
-            ),
+          // Create Form
+          _buildDrawerTile(
+            icon: Icons.create,
+            label: 'Create Form',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CreateFormPage()),
+              );
+            },
           ),
 
-          // Profile Styled Tile
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.lightBlueAccent),
-                borderRadius: BorderRadius.circular(12),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: Colors.blue.shade100,
-                //     blurRadius: 4,
-                //     offset: const Offset(2, 2),
-                //   ),
-                // ],
-              ),
-              child: ListTile(
-                leading: const Icon(Icons.person, color: Colors.lightBlue),
-                title: const Text('Profile',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                },
-              ),
-            ),
+          // Profile
+          _buildDrawerTile(
+            icon: Icons.person,
+            label: 'Profile',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            },
+          ),
+
+          // Logout
+          _buildDrawerTile(
+            icon: Icons.logout,
+            label: 'Logout',
+            onTap: () {
+              user.logout();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Logged out successfully'),
+                  backgroundColor: Colors.redAccent,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+
+              Navigator.pop(context); // Closes the drawer first
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                    (route) => false,
+              );
+            },
           ),
         ],
       ),
     );
   }
+
+  Widget _buildDrawerTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.lightBlueAccent),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          leading: Icon(icon, color: Colors.lightBlue),
+          title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          onTap: onTap,
+        ),
+      ),
+    );
+  }
 }
-
-
-
-
-
-
-
-
