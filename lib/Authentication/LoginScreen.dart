@@ -28,6 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailctrl.text.trim(),
         password: passctrl.text.trim(),
       );
+      User user = userCred.user!;
+      await user.reload();
+
+      if (!user.emailVerified) {
+        showPopupMessage(context, "Please verify your email before logging in.");
+        // Optionally, you can provide a button to resend verification email here
+        return;
+      }
 
       String uid = userCred.user!.uid;
 
@@ -76,22 +84,46 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // void _resetpass() async {
+  //   try {
+  //     await FirebaseAuth.instance.sendPasswordResetEmail(
+  //       email: emailctrl.text.trim(),
+  //     );
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   const SnackBar(content: Text("Password reset link has been sent to your email")),
+  //     // );
+  //     showPopupMessage(context, "Password reset link has been sent to your email");
+  //   } catch (error) {
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   SnackBar(content: Text("Failed to send reset link: $error")),
+  //     // );
+  //     showPopupMessage(context, "Failed to send reset link: $error");
+  //   }
+  // }
   void _resetpass() async {
+    final email = emailctrl.text.trim();
+    if (email.isEmpty) {
+      showPopupMessage(context, "Please enter your email");
+      return;
+    }
+
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: emailctrl.text.trim(),
-      );
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(content: Text("Password reset link has been sent to your email")),
-      // );
-      showPopupMessage(context, "Password reset link has been sent to your email");
-    } catch (error) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text("Failed to send reset link: $error")),
-      // );
-      showPopupMessage(context, "Failed to send reset link: $error");
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      showPopupMessage(context, "Password reset link sent to $email. "
+          "Check your inbox and spam folder.");
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showPopupMessage(context, "No user found with this email.");
+      } else if (e.code == 'invalid-email') {
+        showPopupMessage(context, "Invalid email address.");
+      } else {
+        showPopupMessage(context, "Error: ${e.message}");
+      }
+    } catch (e) {
+      showPopupMessage(context, "Unexpected error: $e");
     }
   }
+
 
   void showPopupMessage(BuildContext context, String message) {
     showDialog(

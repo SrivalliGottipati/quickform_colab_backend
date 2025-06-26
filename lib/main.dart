@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:quickform/firebase_options.dart';
 
 import 'Admin/form_provider.dart';
-import 'Admin/user_provider.dart';
+import 'Admin/admin_provider.dart';
 import 'Authentication/Auth_Change.dart';
 import 'Authentication/LoginScreen.dart';
 import 'Student/Filled_Form_Provider.dart';
@@ -12,7 +12,7 @@ import 'Student/Filled_Form_Provider.dart';
 
 final adminProviders = <ChangeNotifierProvider>[
   ChangeNotifierProvider<FormsProvider>(create: (_) => FormsProvider()),
-  ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+  ChangeNotifierProvider<AdminProvider>(create: (_) => AdminProvider()),
   ChangeNotifierProvider<FilledFormsProvider>(create: (_) => FilledFormsProvider()),
 ];
 

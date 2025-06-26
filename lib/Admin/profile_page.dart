@@ -1,158 +1,156 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'user_provider.dart';
 
-class ProfilePage extends StatelessWidget {
+import 'admin_provider.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _AdminProfilePageState();
+}
+
+class _AdminProfilePageState extends State<ProfilePage> {
+  final nameCtrl = TextEditingController();
+
+  final List<String> groupOptions = ['Thub', 'Placement', 'College'];
+  final List<String> collegeOptions = ['AU', 'ACET'];
+  final List<String> branchOptions = ['CSE', 'AIML', 'ECE', 'IT', 'DS'];
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = Provider.of<AdminProvider>(context, listen: false);
+    provider.fetchAdminDetails().then((_) {
+      nameCtrl.text = provider.name;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context);
+    final provider = Provider.of<AdminProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F3F6),
       appBar: AppBar(
-        backgroundColor: Colors.lightBlueAccent,
-        title: const Text('My Profile'),
-        centerTitle: true,
+        title: const Text('Profile'),
+        backgroundColor: Colors.blueAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
+      body: provider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
           children: [
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 70,
-                  backgroundColor: Colors.lightBlueAccent,
-                  backgroundImage: user.profileImagePath != null
-                      ? FileImage(File(user.profileImagePath!))
-                      : null,
-                  child: user.profileImagePath == null
-                      ? const Icon(Icons.person, size: 80, color: Colors.white)
-                      : null,
-                ),
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: GestureDetector(
-                    onTap: () async {
-                      final picker = ImagePicker();
-                      final pickedImage = await picker.pickImage(source: ImageSource.gallery);
-                      if (pickedImage != null) {
-                        user.setProfileImage(pickedImage.path);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.4),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.edit, size: 20, color: Colors.lightBlue),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
+            _buildReadOnlyField("Email", provider.email),
+            _buildReadOnlyField("Employee ID", provider.employeeId),
+            _buildEditableField("Name", nameCtrl),
+            _buildDropdown("Group", provider.group, groupOptions, (val) {
+              setState(() {
+                provider.group = val ?? '';
+                if (provider.group != 'College') {
+                  provider.college = '';
+                  provider.branch = '';
+                }
+              });
+            }),
+            if (provider.group == 'College') ...[
+              _buildDropdown("College", provider.college, collegeOptions, (val) {
+                setState(() {
+                  provider.college = val ?? '';
+                });
+              }),
+              _buildDropdown("Branch", provider.branch, branchOptions, (val) {
+                setState(() {
+                  provider.branch = val ?? '';
+                });
+              }),
+            ],
             const SizedBox(height: 10),
-            Text(
-              user.name,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF333333),
+            ElevatedButton(
+              onPressed: () {
+                provider.updateAdminProfile(
+                  newName: nameCtrl.text.trim(),
+                  newGroup: provider.group,
+                  newCollege: provider.college,
+                  newBranch: provider.branch,
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile updated')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
+              child: const Text("Update Profile", style: TextStyle(color: Colors.white)),
             ),
-            const SizedBox(height: 4),
-            Text(
-              user.role,
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-
-            ProfileInfoBox(icon: Icons.email, label: 'Email', value: user.email),
-            const SizedBox(height: 5),
-            ProfileInfoBox(icon: Icons.badge, label: 'User ID', value: user.id),
-            const SizedBox(height: 5),
-            ProfileInfoBox(icon: Icons.person_pin, label: 'Role', value: user.role),
-
           ],
         ),
       ),
     );
   }
-}
 
-class ProfileInfoBox extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const ProfileInfoBox({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.purple.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  Widget _buildReadOnlyField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 5),
+        TextField(
+          enabled: false,
+          controller: TextEditingController(text: value),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade200,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.lightBlueAccent),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 5),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade200,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> options, Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 5),
+        DropdownButtonFormField<String>(
+          value: options.contains(value) ? value : null,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade200,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+          ),
+          items: options.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        ),
+        const SizedBox(height: 15),
+      ],
     );
   }
 }

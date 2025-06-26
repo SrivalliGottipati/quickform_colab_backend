@@ -29,9 +29,11 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
 
   String? selectedItem;
   String? selectedCollege;
+  String? selectedBranch;
 
   final List<String> dropvalues = ['Thub', 'Placement', 'College'];
   final List<String> colleges = ['AU', 'ACET'];
+  final List<String> branches = ['CSE', 'AIML', 'ECE', 'IT', 'DS'];
 
   bool isPasswordValid(String password) {
     final pattern = r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&~]).{8,}$';
@@ -43,6 +45,7 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
     final regex = RegExp(pattern);
     return regex.hasMatch(email);
   }
+
 
   OutlineInputBorder normalBorder = OutlineInputBorder(
     borderSide: BorderSide(color: Colors.grey),
@@ -214,14 +217,33 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
 
                       const SizedBox(height: 20),
 
-                      TextField(
-                        controller: branchCtrl,
-                        decoration: InputDecoration(
-                          hintText: "Branch ID",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(width: 1, color: Colors.grey),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: DropdownMenu<String>(
+                            hintText: "Select Branch",
+                            controller: branchCtrl,
+                            selectedTrailingIcon: Icon(Icons.arrow_drop_up),
+                            onSelected: (val) {
+                              selectedBranch = val;
+                              branchCtrl.text = val!;
+                              setState(() {});
+                            },
+                            inputDecorationTheme: InputDecorationTheme(
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            menuStyle: MenuStyle(
+                              backgroundColor: MaterialStatePropertyAll(Colors.white),
+                            ),
+                            dropdownMenuEntries: branches.map((f) => DropdownMenuEntry(value: f, label: f)).toList(),
                           ),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 15,vertical: 12),
                         ),
                       ),
                     ],
@@ -317,6 +339,26 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
                             context,
                             MaterialPageRoute(builder: (context) => const LoginScreen()), // Your admin homepage
                           );
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                              title: Text("Success"),
+                              content: Text("Account created successfully!"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context); // close dialog
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                                    );
+                                  },
+                                  child: Text("OK"),
+                                ),
+                              ],
+                            ),
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -342,13 +384,52 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
     );
   }
 
-  Future<void> createAccount() async{
-    FirebaseAuth auth = await FirebaseAuth.instance;
-    await auth.createUserWithEmailAndPassword(
+  // Future<void> createAccount() async{
+  //   FirebaseAuth auth = await FirebaseAuth.instance;
+  //   await auth.createUserWithEmailAndPassword(
+  //       email: emailctrl.text.trim(),
+  //       password: passctrl.text.trim()
+  //   ).then((value)async{
+  //     String uid = value.user!.uid;
+  //     await FirebaseFirestore.instance.collection('admins').doc(uid).set({
+  //       'uid': uid,
+  //       'name': namectrl.text.trim(),
+  //       'employee id': empctrl.text.trim(),
+  //       'group': dropctrl.text.trim(),
+  //       'College': collegeCtrl.text.trim(),
+  //       'Branch': branchCtrl.text.trim(),
+  //       'Email': emailctrl.text.trim(),
+  //       'createdAt': FieldValue.serverTimestamp(),
+  //     });
+  //
+  //     await FirebaseFirestore.instance.collection('roles').doc(uid).set({
+  //       'role': widget.role,
+  //     });
+  //
+  //     print('Account created with ${emailctrl.text}');
+  //   }).onError((error, StackTrace){
+  //     if(error is SocketException){
+  //       print('Please connect to the network');
+  //     }
+  //     else if(error is FirebaseAuthException){
+  //       authErrors(error.code);
+  //     }
+  //     else{
+  //       print('Issue with ${error}');
+  //     }
+  //   });
+  // }
+  Future<void> createAccount() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    try {
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: emailctrl.text.trim(),
-        password: passctrl.text.trim()
-    ).then((value)async{
-      String uid = value.user!.uid;
+        password: passctrl.text.trim(),
+      );
+
+      String uid = userCredential.user!.uid;
+
       await FirebaseFirestore.instance.collection('admins').doc(uid).set({
         'uid': uid,
         'name': namectrl.text.trim(),
@@ -364,18 +445,21 @@ class _AdminSignUpScreenState extends State<AdminSignUpScreen> {
         'role': widget.role,
       });
 
-      print('Account created with ${emailctrl.text}');
-    }).onError((error, StackTrace){
-      if(error is SocketException){
-        print('Please connect to the network');
-      }
-      else if(error is FirebaseAuthException){
-        authErrors(error.code);
-      }
-      else{
-        print('Issue with ${error}');
-      }
-    });
+      await userCredential.user!.updateDisplayName(namectrl.text.trim());
+      await userCredential.user!.sendEmailVerification();
+      await FirebaseAuth.instance.signOut();
+
+      // showPopupMessage(
+      //   context,
+      //   "Verification link sent to ${emailctrl.text.trim()}.\nPlease verify your email before logging in.",
+      // );
+    } on FirebaseAuthException catch (e) {
+      authErrors(e.code);
+    } on SocketException {
+      showPopupMessage(context, "Please connect to the network.");
+    } catch (e) {
+      showPopupMessage(context, "Unexpected error occurred. Please try again.");
+    }
   }
 
   void authErrors(String code){
